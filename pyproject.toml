@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "renormalize"
+version = "0.1.0"
+description = "重整文件名"
+authors = ["Y.D.X."]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
