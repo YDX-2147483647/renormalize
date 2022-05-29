@@ -3,6 +3,8 @@ from glob import glob
 from os.path import isfile, basename, splitext, join, dirname
 from os import rename
 
+from tqdm import tqdm
+
 from typing import NamedTuple, Optional
 from util import Entity
 
@@ -48,6 +50,8 @@ class Plan(NamedTuple):
 
 
 def renormalize_plan(pattern: str, pathname_or_files: str | list[str], entities: list[Entity]) -> list[Plan]:
+    logging.debug(f"{pathname_or_files=}")
+    logging.debug(f"{type(pathname_or_files)=}")
     files = glob(pathname_or_files) if type(
         pathname_or_files) == str else pathname_or_files
     logging.debug(f"{files=}")
@@ -56,7 +60,7 @@ def renormalize_plan(pattern: str, pathname_or_files: str | list[str], entities:
 
     plans: list[Plan] = []
 
-    for src in files:
+    for src in tqdm(files, desc='Generate plans', unit='files', colour='blue'):
         assert isfile(src), f"“{src}”不是文件。"
 
         src_basename, ext = splitext(basename(src))
@@ -77,6 +81,6 @@ def renormalize_plan(pattern: str, pathname_or_files: str | list[str], entities:
 
 
 def execute(plans: list[Plan]) -> None:
-    for p in plans:
+    for p in tqdm(plans, desc='Execute plans', unit='files', colour='green'):
         rename(p.src, p.dst)
         logging.info(f"Rename “{p.src}” → “{p.dst}”.")

@@ -6,6 +6,7 @@ authors = ["Y.D.X."]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+tqdm = "^4.64.0"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.6.0"
