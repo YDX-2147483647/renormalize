@@ -1,6 +1,6 @@
 import logging
 from argparse import ArgumentParser, Namespace
-from os.path import dirname, join, realpath
+from pathlib import Path
 
 from renormalize import execute, renormalize_plan
 from util import load_entities
@@ -46,7 +46,10 @@ def prepare_parser() -> ArgumentParser:
 
 def apply_args(args: Namespace) -> Namespace:
     if args.entities == "<from_config>":
-        args.entities = join(realpath(dirname(__file__)), "../config/entities.csv")
+        args.entities = Path(__file__).parent / "../config/entities.csv"
+    else:
+        args.entities = Path(args.entities)
+    assert args.entities.exists() and args.entities.is_file()
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)

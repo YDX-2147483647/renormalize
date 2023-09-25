@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 from glob import glob
-from os import rename
-from os.path import basename, dirname, isfile, join, splitext
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 from tqdm import tqdm
@@ -37,7 +36,7 @@ def match(file_basename: str, entities: list[Entity]) -> Entity | None:
     return suspects[0].entity
 
 
-def format_basename(pattern: str, entity: Entity) -> str:
+def format_entity(pattern: str, entity: Entity) -> str:
     for key, value in entity.items():
         pattern = pattern.replace(f":{key}", value)
 
@@ -45,12 +44,12 @@ def format_basename(pattern: str, entity: Entity) -> str:
 
 
 class Plan(NamedTuple):
-    src: str
-    dst: str
+    src: Path
+    dst: Path
 
 
 def renormalize_plan(
-    pattern: str, pathname_or_files: str | list[str], entities: list[Entity]
+    pattern: str, pathname_or_files: str | list[str | Path], entities: list[Entity]
 ) -> list[Plan]:
     logging.debug(f"{pathname_or_files=}")
     logging.debug(f"{type(pathname_or_files)=}")
@@ -65,24 +64,29 @@ def renormalize_plan(
 
     plans: list[Plan] = []
 
-    for src in tqdm(files, desc="Generate plans", unit="files", colour="blue"):
-        assert isfile(src), f"“{src}”不是文件。"
+    for src in tqdm(
+        map(Path, files),
+        total=len(files),
+        desc="Generate plans",
+        unit="files",
+        colour="blue",
+    ):
+        assert src.is_file(), f"“{src}”不是文件。"
 
-        src_basename, ext = splitext(basename(src))
-        entity = match(src_basename, entities)
+        entity = match(src.stem, entities)
 
         if entity is not None:
-            dst_basename = format_basename(pattern, entity)
+            dst_stem = format_entity(pattern, entity)
 
-            if src_basename == dst_basename:
+            if src.stem == dst_stem:
                 logging.info(f"已符合模式：“{src}”。")
             else:
-                plans.append(Plan(src=src, dst=join(dirname(src), dst_basename + ext)))
+                plans.append(Plan(src=src, dst=src.with_stem(dst_stem)))
 
     return plans
 
 
 def execute(plans: list[Plan]) -> None:
     for p in tqdm(plans, desc="Execute plans", unit="files", colour="green"):
-        rename(p.src, p.dst)
+        p.src.rename(p.dst)
         logging.info(f"Rename “{p.src}” → “{p.dst}”.")
