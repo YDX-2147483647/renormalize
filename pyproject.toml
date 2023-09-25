@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "renormalize"
-version = "0.1.0"
+version = "0.1.1"
 description = "重整文件名"
 authors = ["Y.D.X."]
 
